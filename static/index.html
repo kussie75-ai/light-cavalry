@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Light Cavalry</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Unbounded:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080b12;
+      --surface: #0d1220;
+      --surface-bright: #141b2e;
+      --border: #1e2d4a;
+      --accent: #4d9fff;
+      --accent-glow: rgba(77,159,255,0.25);
+      --accent2: #00e5ff;
+      --text: #d4e5ff;
+      --text-dim: #5a7aaa;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-display: 'Unbounded', sans-serif;
+      --btn-grad: linear-gradient(135deg, #2563eb, #0ea5e9);
+      --grad-top: rgba(37,99,235,0.08);
+    }
+    [data-theme="red"] {
+      --accent: #ff4d6a; --accent-glow: rgba(255,77,106,0.25); --accent2: #ff9eb5;
+      --border: #3a1525; --surface: #110a10; --surface-bright: #1e1020;
+      --grad-top: rgba(180,20,60,0.08); --btn-grad: linear-gradient(135deg,#c2185b,#e91e63);
+      --text: #ffd4de; --text-dim: #7a4055;
+    }
+    [data-theme="gold"] {
+      --accent: #ffc84d; --accent-glow: rgba(255,200,77,0.25); --accent2: #ffe082;
+      --border: #3a2e10; --surface: #111008; --surface-bright: #1e1c10;
+      --grad-top: rgba(180,140,0,0.08); --btn-grad: linear-gradient(135deg,#f59e0b,#fbbf24);
+      --text: #fff4d4; --text-dim: #7a6a35;
+    }
+    [data-theme="green"] {
+      --accent: #00e5a0; --accent-glow: rgba(0,229,160,0.25); --accent2: #69ffda;
+      --border: #0d3025; --surface: #080f0d; --surface-bright: #0f1e18;
+      --grad-top: rgba(0,150,80,0.08); --btn-grad: linear-gradient(135deg,#059669,#10b981);
+      --text: #d4fff3; --text-dim: #2d7a60;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 40% at 50% -10%, var(--grad-top) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(77,159,255,0.015) 80px, rgba(77,159,255,0.015) 81px),
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(77,159,255,0.015) 80px, rgba(77,159,255,0.015) 81px);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px 60px;
+    }
+
+    
+    .screen {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      background-image: radial-gradient(ellipse 60% 50% at 50% 50%, var(--grad-top) 0%, transparent 70%);
+      transition: opacity 0.4s ease;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+
+    
+    .sel-card { text-align: center; animation: riseUp 0.7s cubic-bezier(.16,1,.3,1) forwards; }
+    .brand-logo {
+      font-family: var(--font-display);
+      font-size: 28px; font-weight: 700;
+      letter-spacing: 2px; color: var(--accent);
+      text-shadow: 0 0 40px var(--accent-glow);
+      margin-bottom: 10px;
+    }
+    .brand-sub { font-size: 10px; letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 50px; }
+    .sel-grid { display: flex; gap: 16px; }
+    .sel-option {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 36px 30px; border-radius: 20px; cursor: pointer;
+      width: 150px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+      transition: all 0.25s ease;
+    }
+    .sel-option:hover {
+      border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow), inset 0 0 20px rgba(77,159,255,0.05);
+      transform: translateY(-6px);
+    }
+    .sel-option svg { width: 36px; height: 36px; stroke: var(--accent); fill: none; stroke-width: 1.5; filter: drop-shadow(0 0 6px var(--accent-glow)); }
+    .sel-option span { font-size: 11px; font-weight: 600; letter-spacing: 2px; color: var(--text-dim); }
+
+    
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 44px 40px; border-radius: 24px; width: 100%; max-width: 380px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: riseUp 0.7s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .login-title {
+      font-family: var(--font-display); font-size: 14px; font-weight: 600;
+      color: var(--accent); margin-bottom: 32px; letter-spacing: 3px;
+      text-transform: uppercase; text-align: center;
+    }
+    .field { position: relative; margin-bottom: 16px; }
+    .field svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-dim); fill: none; stroke-width: 1.5; pointer-events: none; }
+    .field input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      padding: 14px 14px 14px 42px; border-radius: 12px; color: var(--text);
+      font-family: var(--font-mono); font-size: 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .eye-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-dim); padding: 6px; border-radius: 6px; }
+    .eye-toggle:hover { color: var(--accent); }
+    .eye-toggle svg { position: static; transform: none; width: 16px; height: 16px; stroke: currentColor; }
+    .login-err { font-size: 12px; color: #ff4d6a; text-align: center; margin-bottom: 12px; min-height: 16px; }
+
+    
+    #app { display: none; width: 100%; max-width: 940px; flex-direction: column; align-items: center; opacity: 0; transition: opacity 0.5s ease; }
+
+    header {
+      width: 100%; padding: 44px 0 32px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 36px;
+    }
+    .logo {
+      font-family: var(--font-display); font-size: 22px; font-weight: 700;
+      letter-spacing: 1px; color: var(--text);
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+    .logo span { color: var(--accent); }
+
+    nav {
+      display: flex; gap: 4px; background: var(--surface);
+      padding: 4px; border-radius: 12px; border: 1px solid var(--border);
+    }
+    .nav-btn {
+      background: transparent; border: none; color: var(--text-dim);
+      padding: 10px 18px; font-family: var(--font-mono); font-size: 10px;
+      font-weight: 600; cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+      border-radius: 8px; transition: all 0.2s ease; white-space: nowrap;
+    }
+    .nav-btn.active { background: var(--border); color: var(--accent); }
+    .nav-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-icon { padding: 10px 12px !important; }
+    .nav-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; display: block; transition: transform 0.4s; }
+    .nav-icon:hover svg { transform: rotate(90deg); }
+
+    
+    .tab { display: none; animation: fadeIn 0.35s ease forwards; }
+    .tab.active { display: block; }
+
+    
+    .editor-wrap {
+      position: relative; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 14px;
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .editor-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    #backdrop, .editor-wrap textarea {
+      width: 100%; min-height: 280px; padding: 22px;
+      font-family: var(--font-mono); font-size: 14px; line-height: 1.75;
+      border: none; white-space: pre-wrap; word-wrap: break-word;
+    }
+    #backdrop {
+      position: absolute; inset: 0; color: transparent;
+      pointer-events: none; z-index: 1; overflow-y: auto; margin: 0;
+      background: transparent;
+    }
+    .editor-wrap textarea {
+      background: transparent; color: var(--text); resize: vertical;
+      outline: none; z-index: 2; position: relative; display: block;
+    }
+    mark { color: transparent; background: var(--accent-glow); border-bottom: 2px solid var(--accent); border-radius: 2px; }
+
+    
+    .btn {
+      width: 100%; padding: 16px; background: var(--btn-grad); color: #fff;
+      border: none; border-radius: 12px; font-family: var(--font-mono); font-size: 11px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
+      margin-bottom: 24px; box-shadow: 0 4px 20px var(--accent-glow);
+      transition: filter 0.2s, transform 0.2s;
+    }
+    .btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-sm {
+      width: auto; padding: 10px 20px; font-size: 10px;
+      margin-bottom: 0; display: inline-block;
+    }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-dim); box-shadow: none;
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); filter: none; }
+
+    
+    .empty { text-align: center; padding: 40px; color: var(--text-dim); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; border: 1px dashed var(--border); border-radius: 12px; }
+
+    .result-row {
+      display: flex; align-items: center; padding: 14px 18px;
+      background: var(--surface); border-radius: 12px; margin-bottom: 8px;
+      border: 1px solid var(--border); animation: riseUp 0.3s ease forwards;
+      gap: 12px;
+    }
+    .ctrl-group { display: flex; gap: 6px; flex-shrink: 0; }
+    .icon-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--surface-bright);
+      cursor: pointer; color: var(--text-dim); transition: all 0.2s;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+    .icon-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .phrase-text { flex-grow: 1; font-size: 13px; }
+    .count-badge { color: var(--accent); font-weight: 700; font-size: 13px; white-space: nowrap; }
+
+    
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .compare-grid textarea { min-height: 200px !important; }
+    .sim-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 44px; text-align: center; border-top: 3px solid var(--accent);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: riseUp 0.5s ease forwards;
+    }
+    .sim-val { font-size: 72px; color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); font-family: var(--font-display); font-weight: 700; line-height: 1; }
+    .sim-lbl { color: var(--text-dim); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+    .sim-unique { font-size: 11px; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 8px; }
+
+    
+    .anomaly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+    .anomaly-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+      animation: riseUp 0.3s ease forwards;
+    }
+    .anomaly-word { font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+    .anomaly-word span { color: #fff; background: var(--accent); padding: 0 3px; border-radius: 3px; box-shadow: 0 0 8px var(--accent-glow); }
+    .anomaly-meta { font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; white-space: nowrap; margin-left: 14px; }
+
+    
+    .tg-status {
+      display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      margin-bottom: 20px; font-size: 12px;
+    }
+    .tg-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; flex-shrink: 0; }
+    .tg-dot.online { background: #00e5a0; box-shadow: 0 0 8px #00e5a0; }
+    .tg-connect-form { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+    .tg-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .tg-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      padding: 12px 16px; border-radius: 10px; color: var(--text);
+      font-family: var(--font-mono); font-size: 13px; outline: none; margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .tg-input:focus { border-color: var(--accent); }
+    .tg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .search-result-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px 20px; margin-bottom: 10px; animation: riseUp 0.3s ease forwards;
+    }
+    .sr-chat { font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+    .sr-id { font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
+    .sr-phrase { font-size: 13px; color: var(--text); padding: 8px 12px; background: var(--surface-bright); border-radius: 8px; margin-bottom: 12px; border-left: 3px solid var(--accent); }
+    .sr-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--btn-grad); color: #fff; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-decoration: none; text-transform: uppercase; box-shadow: 0 3px 12px var(--accent-glow); transition: filter 0.2s, transform 0.2s; }
+    .sr-link:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .sr-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+    .searching-anim { text-align: center; padding: 40px; color: var(--text-dim); font-size: 12px; letter-spacing: 2px; }
+    .searching-anim::after { content: ''; animation: dots 1.5s infinite; }
+    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+    
+    .counter-wrap { }
+    .counter-textarea {
+      width: 100%; min-height: 55vh; padding: 22px;
+      font-family: var(--font-mono); font-size: 14px; line-height: 1.75;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      color: var(--text); outline: none; resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 20px;
+    }
+    .counter-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .counter-actions { display: flex; gap: 8px; margin-bottom: 24px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+    .stat-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 1.5; opacity: 0.8; }
+    .stat-val { font-size: 22px; font-weight: 700; color: var(--accent); font-family: var(--font-display); line-height: 1; }
+    .stat-lbl { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+
+    
+    .settings-section { margin-bottom: 36px; }
+    .settings-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+    .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .theme-box {
+      padding: 16px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--surface-bright); cursor: pointer;
+      text-align: center; font-size: 11px; color: var(--text-dim);
+      transition: all 0.2s;
+    }
+    .theme-box:hover { border-color: var(--accent); color: var(--text); }
+    .theme-box.active { border-color: var(--accent); background: var(--border); color: var(--accent); }
+    .theme-dot { width: 24px; height: 24px; border-radius: 50%; margin: 0 auto 10px; }
+    .creds-form { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+    .creds-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .creds-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      padding: 12px 16px; border-radius: 10px; color: var(--text);
+      font-family: var(--font-mono); font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .creds-input:focus { border-color: var(--accent); }
+    .creds-msg { font-size: 12px; margin-top: 10px; min-height: 16px; }
+
+    
+    #modal-overlay {
+      position: fixed; inset: 0; background: rgba(8,11,18,0.92);
+      backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .modal-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      width: 90%; max-width: 640px; padding: 28px; max-height: 85vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+    .ctx-item {
+      background: var(--bg); padding: 16px 18px; border-radius: 10px;
+      border-left: 3px solid var(--accent); margin-bottom: 12px;
+      font-size: 13px; color: var(--text-dim); white-space: pre-wrap; line-height: 1.7;
+    }
+    .ctx-item b { color: var(--accent); background: var(--accent-glow); padding: 1px 5px; border-radius: 3px; }
+
+    
+    body.mobile header { flex-direction: column; gap: 20px; padding: 28px 0; }
+    body.mobile nav { width: 100%; flex-wrap: wrap; justify-content: center; }
+    body.mobile .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    body.mobile .compare-grid { grid-template-columns: 1fr; }
+    body.mobile .theme-grid { grid-template-columns: repeat(2, 1fr); }
+    body.mobile .tg-row { grid-template-columns: 1fr; }
+    body.mobile .creds-row { grid-template-columns: 1fr; }
+
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes riseUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+
+<div class="screen" id="screen-device">
+  <div class="sel-card">
+    <div class="brand-logo">LIGHT CAVALRY</div>
+    <div class="brand-sub">text intelligence platform</div>
+    <div class="sel-grid">
+      <div class="sel-option" onclick="selectDevice('pc')">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>ПК</span>
+      </div>
+      <div class="sel-option" onclick="selectDevice('mobile')">
+        <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span>ТЕЛЕФОН</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen hidden" id="screen-login" style="display:none">
+  <div class="login-card">
+    <div class="login-title">Light Cavalry</div>
+    <div class="field">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <input type="text" id="l-login" placeholder="логин" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <input type="password" id="l-pass" placeholder="пароль" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <span class="eye-toggle" id="eye-btn" onclick="toggleEye()">
+        <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-11-8-11-8a18 18 0 0 1 5.06-5.94M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </span>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="btn" style="margin-bottom:0" onclick="doLogin()">войти</button>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="logo">LIGHT <span>CAVALRY</span></div>
+    <nav>
+      <button class="nav-btn active" onclick="tab('repeats',this)">повторы</button>
+      <button class="nav-btn" onclick="tab('compare',this)">сравнение</button>
+      <button class="nav-btn" onclick="tab('symbols',this)">символы</button>
+      <button class="nav-btn" onclick="tab('search',this)">поиск</button>
+      <button class="nav-btn" onclick="tab('counter',this)">счётчик</button>
+      <button class="nav-btn nav-icon" onclick="tab('settings',this)" title="настройки">
+        <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <div style="width:100%">
+
+    
+    <div class="tab active" id="tab-repeats">
+      <div class="editor-wrap">
+        <div id="backdrop"></div>
+        <textarea id="txt-repeats" placeholder="введите текст для анализа..." oninput="syncBackdrop()"></textarea>
+      </div>
+      <button class="btn" onclick="doRepeats()">найти повторы</button>
+      <div id="repeats-result"></div>
+    </div>
+
+    
+    <div class="tab" id="tab-compare">
+      <div class="compare-grid">
+        <div class="editor-wrap"><textarea id="txt-a" placeholder="оригинал..."></textarea></div>
+        <div class="editor-wrap"><textarea id="txt-b" placeholder="подозрительный текст..."></textarea></div>
+      </div>
+      <button class="btn" onclick="doCompare()">сравнить тексты</button>
+      <div id="compare-result"></div>
+    </div>
+
+    
+    <div class="tab" id="tab-symbols">
+      <div class="editor-wrap"><textarea id="txt-symbols" placeholder="введите текст..."></textarea></div>
+      <button class="btn" onclick="doSymbols()">найти скрытые символы</button>
+      <div id="symbols-result" class="anomaly-grid"></div>
+    </div>
+
+    
+    <div class="tab" id="tab-search">
+      <div id="tg-connect-form" style="display:none">
+        <div class="tg-connect-form">
+          <div class="tg-label">телефон</div>
+          <input class="tg-input" id="tg-phone" placeholder="+79991234567"/>
+          <div class="tg-row">
+            <div>
+              <div class="tg-label">api_id</div>
+              <input class="tg-input" id="tg-api-id" placeholder="12345678"/>
+            </div>
+            <div>
+              <div class="tg-label">api_hash</div>
+              <input class="tg-input" id="tg-api-hash" placeholder="abcdef1234..."/>
+            </div>
+          </div>
+          <div id="tg-code-row" style="display:none">
+            <div class="tg-label">код из telegram</div>
+            <input class="tg-input" id="tg-code" placeholder="12345"/>
+          </div>
+          <div id="tg-2fa-row" style="display:none">
+            <div class="tg-label">пароль двухфакторной аутентификации <span id="tg-2fa-hint" style="color:var(--text-dim);font-size:11px"></span></div>
+            <input class="tg-input" id="tg-2fa-pass" type="password" placeholder="облачный пароль"/>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="doTgConnect()" id="tg-submit-btn">отправить код</button>
+            <button class="btn btn-sm btn-outline" onclick="hideTgConnect()">отмена</button>
+          </div>
+          <div class="creds-msg" id="tg-form-msg"></div>
+        </div>
+      </div>
+
+      <div class="editor-wrap">
+        <textarea id="txt-search" placeholder="вставьте текст для поиска в Telegram..."></textarea>
+      </div>
+      <button class="btn" onclick="doTgSearch()">искать в telegram</button>
+      <div id="search-result"></div>
+    </div>
+
+    
+    <div class="tab" id="tab-counter">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-sm btn-outline" onclick="copyCounter()">копировать</button>
+        <button class="btn btn-sm btn-outline" onclick="clearCounter()">очистить</button>
+      </div>
+      <textarea class="counter-textarea" id="txt-counter" placeholder="вставьте текст..." oninput="calcStats()"></textarea>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>
+          <div class="stat-val" id="st-words">0</div>
+          <div class="stat-lbl">слова</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h8M8 14h5"/></svg></div>
+          <div class="stat-val" id="st-sentences">0</div>
+          <div class="stat-lbl">предложения</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div class="stat-val" id="st-time">0м 0с</div>
+          <div class="stat-lbl">время чтения</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></div>
+          <div class="stat-val" id="st-chars">0</div>
+          <div class="stat-lbl">символы</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h10"/></svg></div>
+          <div class="stat-val" id="st-paragraphs">0</div>
+          <div class="stat-lbl">абзацы</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 12h6l3-9 3 18 3-9h3"/></svg></div>
+          <div class="stat-val" id="st-unique">0</div>
+          <div class="stat-lbl">уник. слова</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M6 8h12M6 12h12M6 16h8"/></svg></div>
+          <div class="stat-val" id="st-punct">0</div>
+          <div class="stat-lbl">знаки препинания</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h6l3-9 3 18 3-9h3"/></svg></div>
+          <div class="stat-val" id="st-complexity">0</div>
+          <div class="stat-lbl">сложность</div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="tab" id="tab-settings">
+      <div class="settings-section">
+        <div class="settings-title">цветовая тема</div>
+        <div class="theme-grid">
+          <div class="theme-box active" id="theme-default" onclick="setTheme('default',this)">
+            <div class="theme-dot" style="background:#4d9fff"></div>синяя
+          </div>
+          <div class="theme-box" id="theme-red" onclick="setTheme('red',this)">
+            <div class="theme-dot" style="background:#ff4d6a"></div>красная
+          </div>
+          <div class="theme-box" id="theme-gold" onclick="setTheme('gold',this)">
+            <div class="theme-dot" style="background:#ffc84d"></div>золотая
+          </div>
+          <div class="theme-box" id="theme-green" onclick="setTheme('green',this)">
+            <div class="theme-dot" style="background:#00e5a0"></div>изумрудная
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">смена логина / пароля</div>
+        <div class="creds-form" id="admin-creds-section" style="display:none">
+          <div class="tg-label">текущий пароль</div>
+          <input class="creds-input" type="password" id="creds-old" placeholder="текущий пароль" style="margin-bottom:12px;width:100%"/>
+          <div class="creds-row">
+            <div>
+              <div class="tg-label">новый логин</div>
+              <input class="creds-input" id="creds-login" placeholder="новый логин"/>
+            </div>
+            <div>
+              <div class="tg-label">новый пароль</div>
+              <input class="creds-input" type="password" id="creds-pass" placeholder="новый пароль"/>
+            </div>
+          </div>
+          <button class="btn btn-sm" onclick="changeCreds()">сохранить</button>
+          <div class="creds-msg" id="creds-msg"></div>
+        </div>
+        <div id="admin-creds-denied" style="color:var(--text-dim);font-size:12px;letter-spacing:1px">доступно только администратору</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="modal-overlay" onclick="closeModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let activePhrase = '';
+let isMobile = false;
+let tgConnected = false;
+let tgCodeSent = false;
+let tg2faPending = false;
+
+async function boot() {
+  try {
+    const r = await fetch(API + '/api/check-session', { method: 'POST' });
+    const d = await r.json();
+    if (d.valid) {
+      showApp();
+    } else {
+      document.getElementById('screen-device').style.display = 'flex';
+    }
+  } catch {
+    document.getElementById('screen-device').style.display = 'flex';
+  }
+}
+
+function selectDevice(mode) {
+  isMobile = mode === 'mobile';
+  const devScreen = document.getElementById('screen-device');
+  devScreen.classList.add('hidden');
+  setTimeout(() => {
+    devScreen.style.display = 'none';
+    const ls = document.getElementById('screen-login');
+    ls.style.display = 'flex';
+    setTimeout(() => ls.classList.remove('hidden'), 20);
+  }, 400);
+}
+
+function toggleEye() {
+  const inp = document.getElementById('l-pass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function doLogin() {
+  const login = document.getElementById('l-login').value;
+  const pass = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  try {
+    const r = await fetch(API + '/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, password: pass })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      const ls = document.getElementById('screen-login');
+      ls.classList.add('hidden');
+      setTimeout(() => { ls.style.display = 'none'; showApp(); }, 400);
+    } else {
+      errEl.textContent = d.message || 'неверные данные';
+    }
+  } catch {
+    errEl.textContent = 'ошибка подключения к серверу';
+  }
+}
+
+function showApp() {
+  const app = document.getElementById('app');
+  if (isMobile) document.body.classList.add('mobile');
+  app.style.display = 'flex';
+  setTimeout(() => app.style.opacity = '1', 50);
+  checkAdminAccess();
+}
+
+async function checkAdminAccess() {
+  try {
+    const r = await fetch(API + '/api/admin/check');
+    const d = await r.json();
+    if (d.is_admin) {
+      document.getElementById('admin-creds-section').style.display = 'block';
+      document.getElementById('admin-creds-denied').style.display = 'none';
+    }
+  } catch {}
+}
+
+function tab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+function syncBackdrop() {
+  const ta = document.getElementById('txt-repeats');
+  const bd = document.getElementById('backdrop');
+  const text = ta.value;
+  requestAnimationFrame(() => {
+    bd.scrollTop = ta.scrollTop;
+    if (activePhrase) {
+      const escaped = activePhrase.split(' ').map(w => w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+      const rx = new RegExp('(' + escaped.join('[\\s.,/#!$%^&*;:{}=\\-_`~()]+') + ')', 'gi');
+      bd.innerHTML = esc(text).replace(rx, '<mark>$1</mark>') + '\n';
+    } else {
+      bd.innerHTML = esc(text) + '\n';
+    }
+  });
+}
+
+document.getElementById('txt-repeats').addEventListener('scroll', function() {
+  document.getElementById('backdrop').scrollTop = this.scrollTop;
+});
+
+async function doRepeats() {
+  const text = document.getElementById('txt-repeats').value;
+  const res = document.getElementById('repeats-result');
+  res.innerHTML = '<div class="searching-anim">анализ</div>';
+  activePhrase = ''; syncBackdrop();
+  try {
+    const r = await fetch(API + '/api/analyze/repeats', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const d = await r.json();
+    res.innerHTML = '';
+    if (!d.repeats || d.repeats.length === 0) {
+      res.innerHTML = '<div class="empty">повторов не найдено</div>'; return;
+    }
+    d.repeats.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.style.animationDelay = i * 0.03 + 's';
+      const safe = item.phrase.replace(/'/g, "\\'");
+      row.innerHTML = `
+        <div class="ctrl-group">
+          <div class="icon-btn" id="hl-${i}" onclick="toggleHL('${safe}',this)">${svgArrow}</div>
+          <div class="icon-btn" onclick="showCtx('${safe}')">${svgEye}</div>
+        </div>
+        <div class="phrase-text">${esc(item.phrase)}</div>
+        <div class="count-badge">${item.count}×</div>`;
+      res.appendChild(row);
+    });
+  } catch(e) {
+    res.innerHTML = `<div class="empty">ошибка: ${e.message}</div>`;
+  }
+}
+
+function toggleHL(phrase, el) {
+  if (activePhrase === phrase) {
+    activePhrase = ''; el.classList.remove('active'); el.innerHTML = svgArrow;
+  } else {
+    document.querySelectorAll('.icon-btn.active').forEach(b => { b.classList.remove('active'); b.innerHTML = svgArrow; });
+    activePhrase = phrase; el.classList.add('active'); el.innerHTML = svgClose;
+  }
+  syncBackdrop();
+}
+
+function showCtx(phrase) {
+  const text = document.getElementById('txt-repeats').value;
+  const body = document.getElementById('modal-body');
+  body.innerHTML = `<div class="modal-title">повтор: ${esc(phrase)}</div>`;
+  const escaped = phrase.split(' ').map(w => w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const rx = new RegExp(escaped.join('[\\s.,/#!$%^&*;:{}=\\-_`~()]+'), 'gi');
+  let m, count = 0;
+  while ((m = rx.exec(text)) !== null && count < 50) {
+    const s = Math.max(0, m.index - 50);
+    const e = Math.min(text.length, m.index + m[0].length + 50);
+    body.innerHTML += `<div class="ctx-item">...${esc(text.substring(s, m.index))}<b>${esc(m[0])}</b>${esc(text.substring(m.index + m[0].length, e))}...</div>`;
+    count++;
+  }
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+async function doCompare() {
+  const text_a = document.getElementById('txt-a').value;
+  const text_b = document.getElementById('txt-b').value;
+  const res = document.getElementById('compare-result');
+  res.innerHTML = '<div class="searching-anim">сравнение</div>';
+  try {
+    const r = await fetch(API + '/api/analyze/compare', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text_a, text_b })
+    });
+    const d = await r.json();
+    res.innerHTML = `<div class="sim-card">
+      <div class="sim-unique">уникальность: ${d.uniqueness}%</div>
+      <div class="sim-val">${d.similarity}%</div>
+      <div class="sim-lbl">схожести</div>
+    </div>`;
+  } catch(e) {
+    res.innerHTML = `<div class="empty">ошибка: ${e.message}</div>`;
+  }
+}
+
+async function doSymbols() {
+  const text = document.getElementById('txt-symbols').value;
+  const res = document.getElementById('symbols-result');
+  res.innerHTML = '<div class="searching-anim" style="grid-column:1/-1">анализ</div>';
+  try {
+    const r = await fetch(API + '/api/analyze/symbols', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const d = await r.json();
+    res.innerHTML = '';
+    if (!d.anomalies || d.anomalies.length === 0) {
+      res.innerHTML = '<div class="empty" style="grid-column:1/-1">скрытых символов не найдено</div>'; return;
+    }
+    d.anomalies.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'anomaly-card';
+      card.style.animationDelay = i * 0.04 + 's';
+      card.innerHTML = `<div class="anomaly-word">${item.highlighted}</div><div class="anomaly-meta">${item.count} замен</div>`;
+      res.appendChild(card);
+    });
+  } catch(e) {
+    res.innerHTML = `<div class="empty" style="grid-column:1/-1">ошибка: ${e.message}</div>`;
+  }
+}
+
+async function checkTgStatus() {
+  try {
+    const r = await fetch(API + '/api/tg/status');
+    const d = await r.json();
+    const dot = document.getElementById('tg-dot');
+    const txt = document.getElementById('tg-status-text');
+    const btn = document.getElementById('tg-btn-connect');
+    if (d.connected) {
+      dot.classList.add('online');
+      txt.textContent = `подключён: ${d.phone}`;
+      btn.textContent = 'переподключить';
+      tgConnected = true;
+    } else {
+      txt.textContent = 'telegram не подключён';
+    }
+  } catch {}
+}
+
+function showTgConnect() {
+  document.getElementById('tg-connect-form').style.display = 'block';
+}
+
+async function doTgConnect() {
+  const phone = document.getElementById('tg-phone').value.trim();
+  const api_id = parseInt(document.getElementById('tg-api-id').value.trim()) || 0;
+  const api_hash = document.getElementById('tg-api-hash').value.trim();
+  const code = document.getElementById('tg-code').value.trim();
+  const msg = document.getElementById('tg-form-msg');
+  const btn = document.getElementById('tg-submit-btn');
+
+  if (!tgCodeSent && !tg2faPending) {
+    if (!phone || !api_id || !api_hash) { msg.style.color = '#ff4d6a'; msg.textContent = 'заполните все поля'; return; }
+    btn.textContent = 'отправка...'; btn.disabled = true;
+    try {
+      const r = await fetch(API + '/api/tg/connect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, api_id, api_hash })
+      });
+      const d = await r.json();
+      msg.style.color = d.ok ? 'var(--accent)' : '#ff4d6a';
+      msg.textContent = d.message;
+      if (d.ok && d.need_code) {
+        tgCodeSent = true;
+        document.getElementById('tg-code-row').style.display = 'block';
+        btn.textContent = 'подтвердить код';
+      }
+    } catch { msg.style.color = '#ff4d6a'; msg.textContent = 'ошибка сети'; }
+    btn.disabled = false;
+
+  } else if (tgCodeSent && !tg2faPending) {
+    if (!code) { msg.style.color = '#ff4d6a'; msg.textContent = 'введите код'; return; }
+    btn.textContent = 'проверка...'; btn.disabled = true;
+    try {
+      const r = await fetch(API + '/api/tg/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, api_id, api_hash, code })
+      });
+      const d = await r.json();
+      if (d.ok && d.need_2fa) {
+
+        tg2faPending = true;
+        tgCodeSent = false;
+        document.getElementById('tg-code-row').style.display = 'none';
+        document.getElementById('tg-2fa-row').style.display = 'block';
+        const hintEl = document.getElementById('tg-2fa-hint');
+        hintEl.textContent = d.password_hint ? `(подсказка: ${d.password_hint})` : '';
+        msg.style.color = 'var(--accent)';
+        msg.textContent = d.message;
+        btn.textContent = 'подтвердить пароль';
+      } else if (d.ok) {
+
+        tgCodeSent = false;
+        hideTgConnect();
+        checkTgStatus();
+      } else {
+        msg.style.color = '#ff4d6a';
+        msg.textContent = d.message;
+      }
+    } catch { msg.style.color = '#ff4d6a'; msg.textContent = 'ошибка сети'; }
+    btn.disabled = false;
+    if (!tg2faPending) btn.textContent = 'подтвердить код';
+
+  } else if (tg2faPending) {
+    const password = document.getElementById('tg-2fa-pass').value;
+    if (!password) { msg.style.color = '#ff4d6a'; msg.textContent = 'введите пароль'; return; }
+    btn.textContent = 'проверка...'; btn.disabled = true;
+    try {
+      const r = await fetch(API + '/api/tg/verify-2fa', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const d = await r.json();
+      msg.style.color = d.ok ? 'var(--accent)' : '#ff4d6a';
+      msg.textContent = d.message;
+      if (d.ok) {
+        tg2faPending = false;
+        hideTgConnect();
+        checkTgStatus();
+      } else {
+
+        tg2faPending = false;
+        tgCodeSent = false;
+        document.getElementById('tg-2fa-row').style.display = 'none';
+        document.getElementById('tg-code-row').style.display = 'none';
+        btn.textContent = 'отправить код';
+      }
+    } catch { msg.style.color = '#ff4d6a'; msg.textContent = 'ошибка сети'; }
+    btn.disabled = false;
+    if (tg2faPending) btn.textContent = 'подтвердить пароль';
+  }
+}
+
+function hideTgConnect() {
+  document.getElementById('tg-connect-form').style.display = 'none';
+  document.getElementById('tg-code-row').style.display = 'none';
+  document.getElementById('tg-2fa-row').style.display = 'none';
+  document.getElementById('tg-code').value = '';
+  document.getElementById('tg-2fa-pass').value = '';
+  document.getElementById('tg-form-msg').textContent = '';
+  tgCodeSent = false;
+  tg2faPending = false;
+}
+
+async function doTgSearch() {
+  const text = document.getElementById('txt-search').value;
+  const res = document.getElementById('search-result');
+  if (!text.trim()) { res.innerHTML = '<div class="empty">введите текст для поиска</div>'; return; }
+  res.innerHTML = '<div class="searching-anim">поиск в telegram</div>';
+  try {
+    const r = await fetch(API + '/api/tg/search', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const d = await r.json();
+    res.innerHTML = '';
+    if (!d.ok) { res.innerHTML = `<div class="empty">${esc(d.message)}</div>`; return; }
+    if (!d.results || d.results.length === 0) { res.innerHTML = '<div class="empty">совпадений не найдено</div>'; return; }
+    d.results.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'search-result-card';
+      card.style.animationDelay = i * 0.05 + 's';
+      card.innerHTML = `
+        <div class="sr-chat">${esc(item.chat_name)}</div>
+        <div class="sr-id">#${item.message_id}</div>
+        <div class="sr-phrase">${esc(item.phrase)}</div>
+        <a class="sr-link" href="${esc(item.link)}" target="_blank" rel="noopener">
+          перейти к шаблону ${svgExtLink}
+        </a>`;
+      res.appendChild(card);
+    });
+    if (d.message) {
+      const note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:var(--text-dim);margin-top:12px;letter-spacing:1px';
+      note.textContent = d.message;
+      res.appendChild(note);
+    }
+  } catch(e) {
+    res.innerHTML = `<div class="empty">ошибка: ${e.message}</div>`;
+  }
+}
+
+function calcStats() {
+  const txt = document.getElementById('txt-counter').value;
+  const words = (txt.toLowerCase().match(/[a-zа-яё0-9']+/giu) || []);
+  const w = words.length;
+  const u = new Set(words).size;
+  const sents = txt.replace(/\n+/g,'\n').split(/(?<=[.!?…])\s+|\n+/g).map(s=>s.trim()).filter(Boolean);
+  const s = sents.length || (txt.trim() ? 1 : 0);
+  const p = txt.split(/\n{2,}/g).map(v=>v.trim()).filter(Boolean).length;
+  const chars = [...txt].length;
+  const punct = (txt.match(/[\p{P}\p{S}]/gu)||[]).length;
+  const totalSec = Math.round((w / 120) * 60);
+  const mm = Math.floor(totalSec / 60);
+  const ss = totalSec % 60;
+  const complexity = Math.max(0, Math.round(w*0.62 + chars*0.07 + u*1.3 - s*0.8 - p*0.4));
+
+  document.getElementById('st-words').textContent = w.toLocaleString('ru');
+  document.getElementById('st-sentences').textContent = s.toLocaleString('ru');
+  document.getElementById('st-time').textContent = `${mm}м ${ss}с`;
+  document.getElementById('st-chars').textContent = chars.toLocaleString('ru');
+  document.getElementById('st-paragraphs').textContent = p.toLocaleString('ru');
+  document.getElementById('st-unique').textContent = u.toLocaleString('ru');
+  document.getElementById('st-punct').textContent = punct.toLocaleString('ru');
+  document.getElementById('st-complexity').textContent = complexity.toLocaleString('ru');
+}
+
+function copyCounter() {
+  const ta = document.getElementById('txt-counter');
+  ta.select(); document.execCommand('copy');
+}
+function clearCounter() {
+  document.getElementById('txt-counter').value = '';
+  calcStats();
+}
+
+function setTheme(name, el) {
+  if (name === 'default') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', name);
+  document.querySelectorAll('.theme-box').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function changeCreds() {
+  const old_password = document.getElementById('creds-old').value;
+  const new_login = document.getElementById('creds-login').value;
+  const new_password = document.getElementById('creds-pass').value;
+  const msg = document.getElementById('creds-msg');
+  if (!old_password || !new_login || !new_password) { msg.style.color = '#ff4d6a'; msg.textContent = 'заполните все поля'; return; }
+  try {
+    const r = await fetch(API + '/api/admin/change-creds', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ old_password, new_login, new_password })
+    });
+    const d = await r.json();
+    msg.style.color = d.ok ? 'var(--accent)' : '#ff4d6a';
+    msg.textContent = d.message;
+  } catch { msg.style.color = '#ff4d6a'; msg.textContent = 'ошибка сети'; }
+}
+
+const svgArrow = `<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+const svgClose = `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+const svgEye = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const svgExtLink = `<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+
+boot();
+</script>
+</body>
+</html>
